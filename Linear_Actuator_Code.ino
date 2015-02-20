@@ -17,14 +17,14 @@ long linearActuatorMoveMotor(int altOrAz, float MachinesPreviousAngle, float Mac
       float NumberOfSteps;
           if (altOrAz==1){
               NumberOfSteps = steps * ChangeInLength * GearRatio * MotorDirection+altLeftoverSteps; 
-              if (abs(NumberOfSteps)==NumberOfSteps){altLeftoverSteps=abs(float(NumberOfSteps-float(long(NumberOfSteps))));}else{
-              altLeftoverSteps=abs(float(NumberOfSteps-float(long(NumberOfSteps))))*-1;}
+              if (ABS(NumberOfSteps)==NumberOfSteps){altLeftoverSteps=ABS(float(NumberOfSteps-float(long(NumberOfSteps))));}else{
+              altLeftoverSteps=ABS(float(NumberOfSteps-float(long(NumberOfSteps))))*-1;}
           }
           
           if (altOrAz==2){
               NumberOfSteps = steps * ChangeInLength * GearRatio * MotorDirection+azLeftoverSteps; 
-              if (abs(NumberOfSteps)==NumberOfSteps){azLeftoverSteps=abs(float(NumberOfSteps-float(long(NumberOfSteps))));}else{
-              azLeftoverSteps=abs(float(NumberOfSteps-float(long(NumberOfSteps))))*-1;}
+              if (ABS(NumberOfSteps)==NumberOfSteps){azLeftoverSteps=ABS(float(NumberOfSteps-float(long(NumberOfSteps))));}else{
+              azLeftoverSteps=ABS(float(NumberOfSteps-float(long(NumberOfSteps))))*-1;}
           }    
       return NumberOfSteps;
 }
@@ -32,16 +32,10 @@ long linearActuatorMoveMotor(int altOrAz, float MachinesPreviousAngle, float Mac
 void linearActuatorReset(int altOrAz, float MotorDirection, float LimitAngle, float GearRatio, float b, float c, float AcuteObtuse, float AngleAtZero){    
     int dirMod = 1;
     if (AcuteObtuse==2){dirMod=-1;}
-    Serial.print("Buscando limite ");
-    if (altOrAz==2) Serial.println("AZ");
-    if (altOrAz==1) Serial.println("AL");
     
     findLimits(altOrAz, MotorDirection*dirMod, LimitAngle);//Seeks out limit switch
     float dif = leadscrewLength(b,c,AcuteObtuse,positionAfterReset(LimitAngle), AngleAtZero) - leadscrewLength(b,c,AcuteObtuse,LimitAngle, AngleAtZero);       
     float NumberOfSteps = steps * dif * GearRatio * MotorDirection;
-    Serial.print("Retrocediendo a posicion de reposo ");
-    if (altOrAz==2) Serial.println("AZ");
-    if (altOrAz==1) Serial.println("AL");
     
     if (altOrAz==2){moveToPosition(0, (NumberOfSteps));}//Moves motor away from limit switch
     if (altOrAz==1){moveToPosition((NumberOfSteps), 0);}//Moves motor away from limit switch

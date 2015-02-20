@@ -17,45 +17,24 @@ void moveMachine(float preTargetAlt, float preTargetAz, float targetalt, float t
     { // La maquina esta funcionando como un Heliostato
       // Calculamos la posicion que debe tomar el heliostato para reflejar la luz en el Target configurado
       FindHeliostatAltAndAz(SunsAltitude, SunsAzimuth, targetalt, targetaz, machineNewAltitude, machineNewAzimuth); 
-     /* Serial.print("Objetivo a reflejar (");
-      Serial.print(machineTargetAz,3);
-      Serial.print(" AZ");
-      Serial.print(", ");
-      Serial.print(machineTargetAlt,3);
-      Serial.println(" AL)");*/
     }
-   
-   /*
-    Serial.print("Pos Objetivo Maquina (");
-    Serial.print(machineNewAzimuth,3);
-    Serial.print(" AZ");
-    Serial.print(", ");
-    Serial.print(machineNewAltitude,3);
-    Serial.println(" AL)");
-    */
-    
+       
     if ((machineNewAzimuth > minAz) && (machineNewAltitude > minAlt) && (machineNewAzimuth < maxAz) && (machineNewAltitude < maxAlt))
     {
       azsteps = linearActuatorMoveMotor(2, machineCurrentAz, machineNewAzimuth, azGearRatio, azMotorDirection, azLengthA, azLengthB, azAcuteObtuse, azAngleAtZero);
       altsteps = linearActuatorMoveMotor(1, machineCurrentAlt, machineNewAltitude, altGearRatio, altMotorDirection, altLengthA, altLengthB, altAcuteObtuse, altAngleAtZero);
    
-      if (abs(altsteps)>0 || abs(azsteps)>0)
+      if (ABS(altsteps)>0 || ABS(azsteps)>0)
       {
-        MachineOn(0);  
+        MachineOn();  
         LCDClear();
         dtostrf(azsteps, 1, 0, lineLCD);
-        //myLCD.write("Moviendo...     ");
-        //myLCD.write(lineLCD);
-        //myLCD.write("AZ ");
-        Serial.println("Moviendo...");
-        Serial.print(lineLCD);
-        Serial.print("AZ ");
+        LCDWrite("Moviendo...     ");
+        LCDWrite(lineLCD);
+        LCDWrite("AZ ");
         dtostrf(altsteps, 1, 0, lineLCD);
-        //myLCD.write(lineLCD);
-        //myLCD.write("EL");
-        Serial.print(lineLCD);
-        Serial.println("EL ");
-   
+        LCDWrite(lineLCD);
+        LCDWrite("EL");
         moveToPosition(altsteps, azsteps);
       }
         
@@ -65,34 +44,25 @@ void moveMachine(float preTargetAlt, float preTargetAz, float targetalt, float t
     else 
     {
       LCDClear();
-      //myLCD.write("Movimiento FUERAde limites");
+      LCDWrite("Movimiento FUERAde limites");
       delay(2000);  
-      Serial.println("El movimiento excede los limites de la maquina");  
     }
   }
-  MachineOff(0);  
+  MachineOff();  
 }
 
 void resetPositionOfMachine(){
     LCDClear();
-    //myLCD.write("Reseteando...   Azimuth");
-    Serial.println("Reseteando...   Azimuth");
+    LCDWrite("Reseteando...   Azimuth");
     linearActuatorReset(2, azMotorDirection, azLimitAngle, azGearRatio, azLengthA, azLengthB, azAcuteObtuse, azAngleAtZero);    
     delay(1000);
     LCDClear();
-    //myLCD.write("Reseteando...   Elevacion");
-    Serial.println("Reseteando...   Elevacion");
+    LCDWrite("Reseteando...   Elevacion");
     linearActuatorReset(1, altMotorDirection, altLimitAngle, altGearRatio, altLengthA, altLengthB, altAcuteObtuse, altAngleAtZero);        
     delay(1000);
     LCDClear();
-    //myLCD.write("Reseteando...   OK!");
-    Serial.println("Reseteando...   OK!");
+    LCDWrite("Reseteando...   OK!");
     machineCurrentAlt = positionAfterReset(altLimitAngle); 
     machineCurrentAz = positionAfterReset(azLimitAngle);
-    Serial.print("Posicion after reset AZ: ");
-    Serial.println(machineCurrentAz);
-    Serial.print("Posicion after reset ALT: ");
-    Serial.println(machineCurrentAlt);
-    
     delay(1000);
 }

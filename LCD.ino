@@ -2,8 +2,6 @@ int LCDOK=0;
 
 void LCDClear()
 {
-  return;
-  /*
   myLCD.write(254); // move cursor to beginning of first line
   myLCD.write(128);
 
@@ -12,7 +10,17 @@ void LCDClear()
 
   myLCD.write(254); // move cursor to beginning of first line
   myLCD.write(128);
-  */
+}
+
+void LCDWrite (char *string_to_write)
+{
+  myLCD.write(string_to_write);  
+  if (printLCDToSerial==1) Serial.println(string_to_write);
+}
+
+void LCDWriteChar (char c)
+{
+  myLCD.write(c);  
 }
 
 void waitForLCDKey()
@@ -36,10 +44,9 @@ void ManualControlThroughLCD()
   byte secondRTC, minuteRTC, hourRTC, dayOfWeekRTC, dayOfMonthRTC, monthRTC, yearRTC;
    
   
-  MachineOff(0);
+  MachineOff();
   LCDClear();
-  //myLCD.write("Configuracion   Usa Flechas");
-  Serial.println("Configuracion   Usa Flechas");
+  LCDWrite("Configuracion   Usa Flechas");
   
   while (1)
   {
@@ -79,15 +86,11 @@ void ManualControlThroughLCD()
     {
       LCDClear();
       dtostrf(machineTargetAz, 1, 2, lineLCD);
-      //myLCD.write(lineLCD);
-      //myLCD.write("AZ ");
-      Serial.print(lineLCD);
-      Serial.print("AZ ");
+      LCDWrite(lineLCD);
+      LCDWrite("AZ ");
       dtostrf(machineTargetAlt, 1, 2, lineLCD);
-      //myLCD.write(lineLCD);
-      //myLCD.write("EL");
-      Serial.print(lineLCD);
-      Serial.println("EL ");
+      LCDWrite(lineLCD);
+      LCDWrite("EL");
       waitForLCDKey();
       delay(200);
       waitForLCDAllKeyRelease();
@@ -101,9 +104,7 @@ void ManualControlThroughLCD()
         machineTargetAz = new_value;
         eepromWriteFloat(4+2*16*1-1, machineTargetAz);
         LCDClear();
-        //myLCD.write("Almacenado");
-        Serial.println("Almacenado");
-
+        LCDWrite("Almacenado");
         delay(1500);  
     
         waitForLCDAllKeyRelease();
@@ -118,8 +119,7 @@ void ManualControlThroughLCD()
         machineTargetAlt = new_value;
         eepromWriteFloat(2*16*1-1, machineTargetAlt);
         LCDClear();
-        //myLCD.write("Almacenado");
-        Serial.println("Almacenado");
+        LCDWrite("Almacenado");
         delay(1500);  
     
         waitForLCDAllKeyRelease();
@@ -132,9 +132,8 @@ void ManualControlThroughLCD()
       RTC_Code::getDateDs1307(&secondRTC, &minuteRTC, &hourRTC, &dayOfWeekRTC, &dayOfMonthRTC, &monthRTC, &yearRTC);
 
       sprintf(lineLCD,"  %02d:%02d:%02d %02d/%02d",(int)hourRTC,(int)minuteRTC,(int)secondRTC,(int)dayOfMonthRTC, (int)monthRTC);
-      //myLCD.write(lineLCD);
-      Serial.println(lineLCD);
-    
+      LCDWrite(lineLCD);
+      
       waitForLCDKey();
       delay(200);
       waitForLCDAllKeyRelease();      
@@ -150,8 +149,7 @@ void ManualControlThroughLCD()
         RTC_Code::setDateDs1307(secondRTC, minuteRTC, (byte)new_value, dayOfWeekRTC, dayOfMonthRTC, monthRTC, yearRTC); 
       
         LCDClear();
-        //myLCD.write("Almacenado");
-               Serial.println("Almacenado");
+        LCDWrite("Almacenado");
         delay(1500);  
     
         waitForLCDAllKeyRelease();
@@ -168,8 +166,7 @@ void ManualControlThroughLCD()
         RTC_Code::setDateDs1307(0, (byte)new_value, hourRTC, dayOfWeekRTC, dayOfMonthRTC, monthRTC, yearRTC); 
       
         LCDClear();
-        //myLCD.write("Almacenado");
-                Serial.println("Almacenado");
+        LCDWrite("Almacenado");
         delay(1500);  
     
         waitForLCDAllKeyRelease();
@@ -186,8 +183,7 @@ void ManualControlThroughLCD()
         RTC_Code::setDateDs1307(secondRTC, minuteRTC, hourRTC, dayOfWeekRTC, (byte)new_value, monthRTC, yearRTC); 
       
         LCDClear();
-        //myLCD.write("Almacenado");
-                Serial.println("Almacenado");
+        LCDWrite("Almacenado");
         delay(1500);  
     
         waitForLCDAllKeyRelease();
@@ -204,8 +200,7 @@ void ManualControlThroughLCD()
         RTC_Code::setDateDs1307(secondRTC, minuteRTC, hourRTC, dayOfWeekRTC, dayOfMonthRTC, (byte)new_value, yearRTC); 
       
         LCDClear();
-        //myLCD.write("Almacenado");
-                Serial.println("Almacenado");
+        LCDWrite("Almacenado");
         delay(1500);  
     
         waitForLCDAllKeyRelease();
@@ -220,8 +215,7 @@ void ManualControlThroughLCD()
         eepromWriteByte(4+4+2*16*1-1, (byte)new_value);
         suntrackerOrHeliostat=new_value;
         LCDClear();
-        //myLCD.write("Almacenado");
-                Serial.println("Almacenado");
+        LCDWrite("Almacenado");
         delay(1500);  
     
         waitForLCDAllKeyRelease();
@@ -233,12 +227,11 @@ void ManualControlThroughLCD()
   {
     // Imprimimos opcion actual
     LCDClear();
-    //myLCD.write(options[option]);
-    Serial.println(options[option]);
+    LCDWrite(options[option]);
   }
   }
   
-  MachineOn(0);
+  //MachineOn(0);
 }
 
 float changeLCDValue(float current_value, double min_step, double max_step, char *title)
@@ -251,13 +244,11 @@ float changeLCDValue(float current_value, double min_step, double max_step, char
   while (1)
   {
   LCDClear();
-  //myLCD.write(title);
-  //myLCD.write(254);
-  //myLCD.write(192);
+  LCDWrite(title);
+  LCDWriteChar(254);
+  LCDWriteChar(192);
   dtostrf(newValue, 1, 2, lineLCD);
-  //myLCD.write(lineLCD);
-  Serial.println(title);
-  Serial.println(lineLCD);
+  LCDWrite(lineLCD);
   
   // Esperamos a que se pulse un boton o se anule el modo manual
   waitForLCDKey();
@@ -279,13 +270,10 @@ float changeLCDValue(float current_value, double min_step, double max_step, char
       while (digitalRead(10)!=HIGH)
       {
         newValue-=max_step;
-        //myLCD.write(254);
-        //myLCD.write(192);
+        LCDWriteChar(254);
+        LCDWriteChar(192);
         dtostrf(newValue, 1, 2, lineLCD);
-        //myLCD.write(lineLCD);
-  Serial.println(title);
-  Serial.println(lineLCD);
-
+        LCDWrite(lineLCD);
         delay(50);
       }
     }
@@ -309,13 +297,10 @@ float changeLCDValue(float current_value, double min_step, double max_step, char
       while (digitalRead(11)!=HIGH)
       {
         newValue+=max_step;
-        //myLCD.write(254);
-        //myLCD.write(192);
+        LCDWriteChar(254);
+        LCDWriteChar(192);
         dtostrf(newValue, 1, 2, lineLCD);
-        //myLCD.write(lineLCD);
-  Serial.println(title);
-  Serial.println(lineLCD);
-
+        LCDWrite(lineLCD);
         delay(50);
       }
     }
@@ -338,8 +323,7 @@ float changeLCDValue(float current_value, double min_step, double max_step, char
     if (millis()>=now+3000)
     {
       LCDClear();
-      //myLCD.write("CANCEL");
-Serial.println("CANCEL");
+      LCDWrite("CANCEL");
       delay(1500);
       return 0;
     }

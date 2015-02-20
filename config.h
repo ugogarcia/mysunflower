@@ -1,5 +1,7 @@
 // GENERALES
- 
+#define ABS(x) ((x)>=0?(x):-(x))
+const int printLCDToSerial=1;
+
 // MOVIMIENTO ALTITUD
 const float altGearRatio=5;              // Set 2. Numero de vueltas por unidad de longitud
 const int altMotorDirection=1;           // Set 3. 0 - Motor detenido. 1 - Movimiento normal. -1 - Movimiento reverso
@@ -42,8 +44,8 @@ const float altResetSpeed=200;           // RPM de los motores en movimiento de 
 const float azResetSpeed=200;
 const float altAccel = 2;                // Numero de segundos para que motor alcance su velocidad maxima
 const float azAccel = 2;  
-const long altitudeMax = 1000000;        // Numero de pasos que da el motor como maximo cuando se esta buscando la posicion de reset
-const long azimuthMax  = 1000000;
+const long altitudeMax = 60000;        // Numero de pasos que da el motor como maximo cuando se esta buscando la posicion de reset
+const long azimuthMax  = 72000;
 
 // ASIGNACION CONEXIONES
 const int azimuthStepPin = 2;            // Pin de paso y direccion

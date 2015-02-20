@@ -1,9 +1,3 @@
-long labs(long num)
-{
-  return (num>=0)?num:num*-1; 
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //This code moves the stepper motors
 void moveToPosition(long altsteps, long azsteps)
@@ -13,8 +7,8 @@ void moveToPosition(long altsteps, long azsteps)
   Serial.print(". Movimiento AL: ");
   Serial.println(altsteps);
 */
-  moveMotorWithAccel(azsteps, azimuthStepPin, azimuthDirPin, azSpeed, azAccel);
-  moveMotorWithAccel(altsteps, altitudeStepPin, altitudeDirPin, altSpeed, altAccel); 
+ moveMotorWithAccel(azsteps, azimuthStepPin, azimuthDirPin, azSpeed, azAccel);
+ moveMotorWithAccel(altsteps, altitudeStepPin, altitudeDirPin, altSpeed, altAccel); 
 }  
 
 
@@ -22,44 +16,45 @@ void moveToPosition(long altsteps, long azsteps)
 //This code moves the stepper motors with acceleration
 void moveMotorWithAccel(long numOfSteps,int stepPin, int DirPin, float maxspeed,float Accel)
 {
-  long pasos=0;
+  //long pasos=0;
   //Serial.print("1. Steps: ");
   //Serial.println(numOfSteps);
   if ((long)numOfSteps>=0) {digitalWrite(DirPin, HIGH);} else {digitalWrite(DirPin, LOW);}  
   
   float minMotorDelay  = (1000000/((maxspeed*steps)/60))/2;
-  float halfWay = abs(long(numOfSteps/2));
+  float halfWay = ABS(long(numOfSteps/2));
   float maxMotorDelay=((1000000/((maxspeed*steps)/60))*100)/2;
   float motorDelay=maxMotorDelay;  
 
- // Serial.print("Mw voy a mover: ");
- // Serial.println(numOfSteps);
+  /*Serial.print("Me voy a mover: ");
+  Serial.println(ABS(numOfSteps));*/
   
   float motorDelayAdjust=((maxMotorDelay-minMotorDelay)*(maxMotorDelay-minMotorDelay))/(Accel*1000000);               
   float numberOfStepsToReachMinFromMax=long((maxMotorDelay-minMotorDelay)/motorDelayAdjust);    
   if(-0.00001<Accel&&Accel<0.00001){motorDelay=minMotorDelay;}
-     
-  if (labs(numOfSteps)>numberOfStepsToReachMinFromMax*2)
+  
+  MachineOn();   
+  if (ABS(numOfSteps)>numberOfStepsToReachMinFromMax*2)
   {//This code runs if the accleration slope "flat lines"
-//    Serial.println("ENTRO POR A");
-    for (long doSteps=1; doSteps <= labs(numOfSteps); doSteps++)
+    //Serial.println("ENTRO POR A");
+    for (long doSteps=1; doSteps <= ABS(numOfSteps); doSteps++)
     {
-      pasos++;
+      //pasos++;
       delayInMicroseconds(motorDelay);
       digitalWrite(stepPin, HIGH);
       delayInMicroseconds(motorDelay);
       digitalWrite(stepPin, LOW);
       if ((motorDelay>minMotorDelay)&&(doSteps<halfWay)) {motorDelay=motorDelay-motorDelayAdjust;}//Accelerates the motor
       if ((motorDelay<minMotorDelay)) {motorDelay=minMotorDelay;}//Holds the motor at its max speed
-      if ((doSteps>(labs(numOfSteps)-numberOfStepsToReachMinFromMax))) {motorDelay=motorDelay+motorDelayAdjust;}//Deccelerates the motor after it gets close to the end of its move
+      if ((doSteps>(ABS(numOfSteps)-numberOfStepsToReachMinFromMax))) {motorDelay=motorDelay+motorDelayAdjust;}//Deccelerates the motor after it gets close to the end of its move
     }
   }
   else
   {//This code runs if the acceleration slope is an upside down V.
   //  Serial.println("ENTRO POR B");
-    for (long doSteps=1; doSteps <= labs(numOfSteps); doSteps++)
+    for (long doSteps=1; doSteps <= ABS(numOfSteps); doSteps++)
     {
-      pasos++;
+      //pasos++;
       delayInMicroseconds(motorDelay);
       digitalWrite(stepPin, HIGH);     
       delayInMicroseconds(motorDelay);
@@ -71,10 +66,10 @@ void moveMotorWithAccel(long numOfSteps,int stepPin, int DirPin, float maxspeed,
     }
   } 
   
+  MachineOff();
   
-  
-  Serial.print("Me he movido de pasos: ");
-  Serial.println(pasos);
+  /*Serial.print("Me he movido de pasos: ");
+  Serial.println(pasos);*/
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -104,30 +99,41 @@ void findLimits(int altOrAz, int motorDirection, float limitAngle)
 
 void searchForLimit(float limitAngle, int DirPin, int stepPin, int ResetSpeed, int LimitPin, long maxResetSteps, int motorDirection)
 {
-  long x;
+  long x=0;
+  int microReached=0;
   int whichDir;
+    
   if (motorDirection!=0)
   {//A motorDirection of 0 will skip the reset  
-    if (abs(limitAngle) != limitAngle) {whichDir = 1;} else {whichDir = -1;}
-  //Serial.println("OK2");
+    if (ABS(limitAngle) != limitAngle) {whichDir = 1;} else {whichDir = -1;}
     if (motorDirection*whichDir != 1) {digitalWrite(DirPin, LOW);} else {digitalWrite(DirPin, HIGH);}
-  //Serial.println("OK3");
     float MotorDelay = ( 1000000 * ( 60 / (steps * ResetSpeed) ) ) / 2; 
-    //Serial.println("EMPEZAMOS A MOVER");
-    Serial.println("Numero maximo de pasos: ");Serial.print(maxResetSteps);
-    Serial.println("X: ");Serial.print(x);
     
-    delay(1000);
+    MachineOn();
     while(x<maxResetSteps)
     {
       digitalWrite(stepPin, HIGH);
       delayInMicroseconds(MotorDelay);          
       digitalWrite(stepPin, LOW); 
       delayInMicroseconds(MotorDelay);
-      if (digitalRead(LimitPin)==HIGH) {Serial.println("Ha tocado el micro!!!"); x=maxResetSteps;}
-       x+=1;
-    //   if (x>=maxResetSteps) {Serial.print("Alcanzado numero maximo de pasos: ");Serial.print(maxResetSteps);}
+      if (digitalRead(LimitPin)==HIGH) 
+      {
+        LCDClear();
+        LCDWrite("Alcanzado micro"); 
+        delay(1000);
+        x=maxResetSteps;
+        microReached=1;
+      }
+      x+=1;
      }
+    MachineOff();
+    
+    if (microReached==0)
+    {
+      LCDClear();
+      LCDWrite("ERROR. Imposiblealcanzar micro");
+      while(1);
+    }
     
   }
 }
@@ -137,7 +143,7 @@ void searchForLimit(float limitAngle, int DirPin, int stepPin, int ResetSpeed, i
 float positionAfterReset(float limitAngle)
 {
   float endAltAndAz;
-  if (abs(limitAngle) == limitAngle) {endAltAndAz = limitAngle - moveAwayFromLimit;} else {endAltAndAz = limitAngle + moveAwayFromLimit;} 
+  if (ABS(limitAngle) == limitAngle) {endAltAndAz = limitAngle - moveAwayFromLimit;} else {endAltAndAz = limitAngle + moveAwayFromLimit;} 
   return endAltAndAz; 
 }
 
@@ -176,70 +182,6 @@ float to_rad(float angle)
 float to_deg(float angle)
 {
   return angle*(180/pi);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//This function returns a float number typed into the serial monitor
-float getFloatFromSerialMonitor()
-{
-  float f=0;    
-  int x=0;  
-  while (x<1)
-  {  
-    String str;   
-    // when characters arrive over the serial port...
-    if (Serial.available())
-    {
-      // wait a bit for the entire message to arrive
-      delay(100);
-      int i=0;
-      // read all the available characters
-      while (Serial.available() > 0)
-      {
-       char inByte = Serial.read();
-        str=str+inByte;
-        inData[i]=inByte;
-        i+=1;
-        x=2;
-      }
-      f = atof(inData);
-      memset(inData, 0, sizeof(inData));  
-    }
-    if (digitalRead(manualModeOnOffPin)==LOW) x=2;
-  }//END WHILE X<1  
-  return f; 
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void ManualControlThroughSerial()
-{
-  float newAlt,newAz, newTargetAlt, newTargetAz; 
-  MachineOff(0); // Apagamos los motores porque de lo contrario se sobrecalientan si mantenemos el modo manual activo mucho tiempo  
-  Serial.println("");
-  Serial.print("Target actual (");
-  Serial.print(machineTargetAz,4);      
-  Serial.print(" AZ, ");
-  Serial.print(machineTargetAlt,4);      
-  Serial.println(" AL)");      
-  Serial.println("Nueva AZ Target:"); 
-  newTargetAz = getFloatFromSerialMonitor();
-  Serial.println(newTargetAz,4);   
-  Serial.println("Nueva AL Target:");    
-  newTargetAlt = getFloatFromSerialMonitor();
-  Serial.println(newTargetAlt,4);   
-   
-  Serial.println("Confirma datos? Si=1, No=0");
-  int yesOrNo = getFloatFromSerialMonitor(); 
-  Serial.println(yesOrNo); 
-  if (yesOrNo==1)
-  {
-    machineTargetAlt = newTargetAlt;
-    machineTargetAz = newTargetAz;
-    eepromWriteFloat(2*16*1-1, machineTargetAlt);  
-    eepromWriteFloat(4+2*16*1-1, machineTargetAz);  
-    Serial.println("Configuracion almacenada en memoria");
-  } 
-  MachineOn(0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -297,12 +239,12 @@ byte machineToByte(int MachineNumber)
   return x;
 }
 
-void MachineOn(int number)
+void MachineOn()
 {
   digitalWrite(EnablePin, HIGH);
 }
  
-void MachineOff(int number)
+void MachineOff()
 {
   digitalWrite(EnablePin, LOW);
 }
