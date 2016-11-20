@@ -119,7 +119,7 @@ void searchForLimit(float limitAngle, int DirPin, int stepPin, int ResetSpeed, i
       if (digitalRead(LimitPin)==HIGH) 
       {
         LCDClear();
-        LCDWrite("Alcanzado micro"); 
+        LCDWrite((char*)"Alcanzado micro"); 
         delay(1000);
         x=maxResetSteps;
         microReached=1;
@@ -131,7 +131,7 @@ void searchForLimit(float limitAngle, int DirPin, int stepPin, int ResetSpeed, i
     if (microReached==0)
     {
       LCDClear();
-      LCDWrite("ERROR. Imposiblealcanzar micro");
+      LCDWrite((char*)"ERROR. Imposiblealcanzar micro");
       while(1);
     }
     

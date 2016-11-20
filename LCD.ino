@@ -39,14 +39,14 @@ void ManualControlThroughLCD()
   float new_value; 
   int option=-1;
   int max_options=8;
-  char *options[]={"Ver target","Modificar targetAZimuth","Modificar targetELevation", "Ver fecha y hora", "Modificar hora", "Modificar minutos", "Modificar dia", "Modificar mes","Modo Heliostato"};
+  char *options[]={(char*)"Ver target",(char*)"Modificar targetAZimuth",(char*)"Modificar targetELevation",(char*)"Ver fecha y hora",(char*)"Modificar hora",(char*)"Modificar minutos",(char*)"Modificar dia",(char*)"Modificar mes",(char*)"Modo Heliostato"};
   char lineLCD[40];
   byte secondRTC, minuteRTC, hourRTC, dayOfWeekRTC, dayOfMonthRTC, monthRTC, yearRTC;
    
   
   MachineOff();
   LCDClear();
-  LCDWrite("Configuracion   Usa Flechas");
+  LCDWrite((char*)"Configuracion   Usa Flechas");
   
   while (1)
   {
@@ -87,10 +87,10 @@ void ManualControlThroughLCD()
       LCDClear();
       dtostrf(machineTargetAz, 1, 2, lineLCD);
       LCDWrite(lineLCD);
-      LCDWrite("AZ ");
+      LCDWrite((char*)"AZ ");
       dtostrf(machineTargetAlt, 1, 2, lineLCD);
       LCDWrite(lineLCD);
-      LCDWrite("EL");
+      LCDWrite((char*)"EL");
       waitForLCDKey();
       delay(200);
       waitForLCDAllKeyRelease();
@@ -98,13 +98,13 @@ void ManualControlThroughLCD()
     // Modificar target AZ
     else if (option==1)
     {
-      new_value=changeLCDValue(machineTargetAz, 0.05, 0.5, "Target AZimuth");
+      new_value=changeLCDValue(machineTargetAz, 0.05, 0.5, (char*)"Target AZimuth");
       if (LCDOK!=0)
       {
         machineTargetAz = new_value;
         eepromWriteFloat(4+2*16*1-1, machineTargetAz);
         LCDClear();
-        LCDWrite("Almacenado");
+        LCDWrite((char*)"Almacenado");
         delay(1500);  
     
         waitForLCDAllKeyRelease();
@@ -113,13 +113,13 @@ void ManualControlThroughLCD()
     // Modificar target EL
     else if (option==2)
     {
-      new_value=changeLCDValue(machineTargetAlt, 0.05, 0.5, "Target ELevation");
+      new_value=changeLCDValue(machineTargetAlt, 0.05, 0.5, (char*)"Target ELevation");
       if (LCDOK!=0)
       {
         machineTargetAlt = new_value;
         eepromWriteFloat(2*16*1-1, machineTargetAlt);
         LCDClear();
-        LCDWrite("Almacenado");
+        LCDWrite((char*)"Almacenado");
         delay(1500);  
     
         waitForLCDAllKeyRelease();
@@ -142,14 +142,14 @@ void ManualControlThroughLCD()
     else if (option==4)
     {
       RTC_Code::getDateDs1307(&secondRTC, &minuteRTC, &hourRTC, &dayOfWeekRTC, &dayOfMonthRTC, &monthRTC, &yearRTC); 
-      new_value=changeLCDValue(hourRTC, 1, 1, "Hora");
+      new_value=changeLCDValue(hourRTC, 1, 1, (char*)"Hora");
       if (LCDOK!=0)
       {
         RTC_Code::getDateDs1307(&secondRTC, &minuteRTC, &hourRTC, &dayOfWeekRTC, &dayOfMonthRTC, &monthRTC, &yearRTC); 
         RTC_Code::setDateDs1307(secondRTC, minuteRTC, (byte)new_value, dayOfWeekRTC, dayOfMonthRTC, monthRTC, yearRTC); 
       
         LCDClear();
-        LCDWrite("Almacenado");
+        LCDWrite((char*)"Almacenado");
         delay(1500);  
     
         waitForLCDAllKeyRelease();
@@ -159,14 +159,14 @@ void ManualControlThroughLCD()
     else if (option==5)
     {
       RTC_Code::getDateDs1307(&secondRTC, &minuteRTC, &hourRTC, &dayOfWeekRTC, &dayOfMonthRTC, &monthRTC, &yearRTC); 
-      new_value=changeLCDValue(minuteRTC, 1, 1, "Minutos");
+      new_value=changeLCDValue(minuteRTC, 1, 1, (char*)"Minutos");
       if (LCDOK!=0)
       {
         RTC_Code::getDateDs1307(&secondRTC, &minuteRTC, &hourRTC, &dayOfWeekRTC, &dayOfMonthRTC, &monthRTC, &yearRTC); 
         RTC_Code::setDateDs1307(0, (byte)new_value, hourRTC, dayOfWeekRTC, dayOfMonthRTC, monthRTC, yearRTC); 
       
         LCDClear();
-        LCDWrite("Almacenado");
+        LCDWrite((char*)"Almacenado");
         delay(1500);  
     
         waitForLCDAllKeyRelease();
@@ -176,14 +176,14 @@ void ManualControlThroughLCD()
     else if (option==6)
     {
       RTC_Code::getDateDs1307(&secondRTC, &minuteRTC, &hourRTC, &dayOfWeekRTC, &dayOfMonthRTC, &monthRTC, &yearRTC); 
-      new_value=changeLCDValue(dayOfMonthRTC, 1, 1, "Dia");
+      new_value=changeLCDValue(dayOfMonthRTC, 1, 1, (char*)"Dia");
       if (LCDOK!=0)
       {
         RTC_Code::getDateDs1307(&secondRTC, &minuteRTC, &hourRTC, &dayOfWeekRTC, &dayOfMonthRTC, &monthRTC, &yearRTC); 
         RTC_Code::setDateDs1307(secondRTC, minuteRTC, hourRTC, dayOfWeekRTC, (byte)new_value, monthRTC, yearRTC); 
       
         LCDClear();
-        LCDWrite("Almacenado");
+        LCDWrite((char*)"Almacenado");
         delay(1500);  
     
         waitForLCDAllKeyRelease();
@@ -193,14 +193,14 @@ void ManualControlThroughLCD()
     else if (option==7)
     {
       RTC_Code::getDateDs1307(&secondRTC, &minuteRTC, &hourRTC, &dayOfWeekRTC, &dayOfMonthRTC, &monthRTC, &yearRTC); 
-      new_value=changeLCDValue(dayOfMonthRTC, 1, 1, "Mes");
+      new_value=changeLCDValue(dayOfMonthRTC, 1, 1, (char*)"Mes");
       if (LCDOK!=0)
       {
         RTC_Code::getDateDs1307(&secondRTC, &minuteRTC, &hourRTC, &dayOfWeekRTC, &dayOfMonthRTC, &monthRTC, &yearRTC); 
         RTC_Code::setDateDs1307(secondRTC, minuteRTC, hourRTC, dayOfWeekRTC, dayOfMonthRTC, (byte)new_value, yearRTC); 
       
         LCDClear();
-        LCDWrite("Almacenado");
+        LCDWrite((char*)"Almacenado");
         delay(1500);  
     
         waitForLCDAllKeyRelease();
@@ -209,13 +209,13 @@ void ManualControlThroughLCD()
     // Modo heliostato
     else if (option==8)
     {
-      new_value=changeLCDValue(suntrackerOrHeliostat, 1, 1, "1-Seguir 2-Helio");
+      new_value=changeLCDValue(suntrackerOrHeliostat, 1, 1, (char*)"1-Seguir 2-Helio");
       if (new_value==1 || new_value==2)
       {
         eepromWriteByte(4+4+2*16*1-1, (byte)new_value);
         suntrackerOrHeliostat=new_value;
         LCDClear();
-        LCDWrite("Almacenado");
+        LCDWrite((char*)"Almacenado");
         delay(1500);  
     
         waitForLCDAllKeyRelease();
@@ -323,7 +323,7 @@ float changeLCDValue(float current_value, double min_step, double max_step, char
     if (millis()>=now+3000)
     {
       LCDClear();
-      LCDWrite("CANCEL");
+      LCDWrite((char*)"CANCEL");
       delay(1500);
       return 0;
     }

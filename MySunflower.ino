@@ -19,7 +19,7 @@
 #include "Wire.h"  
 #include <Flash.h>
 #include <EEPROM.h>
-#include "SunPositionAlgo_LowAc.h"
+#include "SunPositionAlgo_LowAc.h" // Esta libreria y la siguiente hay que añadirla al entorno (gestionar librerias) desde el directorio .\libraries
 #include "RTC_Code.h"
 #include <SoftwareSerial.h>
 
@@ -38,7 +38,7 @@ void setup()
   delay(500); // wait for display to boot up
   
   LCDClear();
-  LCDWrite("MySunflower     CARGANDO...");
+  LCDWrite((char*)"MySunflower     CARGANDO...");
   delay(1000);
   
   // Solo configuracmos los pines de salida, pues por defecto, Arduino los configura como de entrada
@@ -86,49 +86,6 @@ void setup()
 }
 int iterations=0; 
 
-void loop3()
-{
-  /*
-  if (digitalRead(altLimitPin)==HIGH)
-    Serial.println("PULSADO");
-  else
-    Serial.println("OFF");
-   delay(1000);*/
-   //MachineOn();
-   
-   //moveMotorWithAccel(33000, azimuthStepPin, azimuthDirPin, azSpeed, azAccel);
-   //moveMotorWithAccel(-34000, altitudeStepPin, altitudeDirPin, altSpeed, altAccel); 
-   /*
-  float numOfSteps;
-  numOfSteps=-34000;
-  //numOfSteps=((numOfSteps)>0?(numOfSteps):-(numOfSteps));
-  Serial.print("Numero1: ");
-  Serial.println(numOfSteps);
-  for (numOfSteps=32500; numOfSteps<=33000; numOfSteps++)
-  {
-    Serial.print("abs(");
-    Serial.print(numOfSteps);
-    Serial.print(")=");
-    Serial.println(ABS(numOfSteps));
-  }
-  */
-  /*long azsteps = linearActuatorMoveMotor(2, 45, -45, azGearRatio, azMotorDirection, azLengthA, azLengthB, azAcuteObtuse, azAngleAtZero);
-  long altsteps = linearActuatorMoveMotor(1, -30, +45, altGearRatio, altMotorDirection, altLengthA, altLengthB, altAcuteObtuse, altAngleAtZero);
-   
-   Serial.println("AZSTEPS");
-   Serial.println(azsteps);
-   Serial.println("ALTSTEPS");
-   Serial.println(altsteps);
-   
-   #ifdef LCD_ON 
-     LCDClear();
-     myLCD.write("LCD ON");
-   #endif
-   
-   while(1);
-  */
-}
-
 // Bucle principal
 void loop()
 {  
@@ -144,14 +101,18 @@ void loop()
   minute = minuteRTC;
   second = secondRTC;
 
-  // Controlamos la hora para saber si debemos funcionar, resetear o esperar al amanecer
+  // Control de cambio de estado: 
+  //    * Amanecer (empezamos a mover)
+  //    * Anochecer (volvemos a reposo)
+  //    * Cambio de día (cuando vemos que hemos pasado de día pasamos al estado Amanecer)
+  //    * Parada de la máquina si la hora es menor a la de inicio. Este estado no lo entiendo mucho, supongo que es por si hay un cambio de hora manual que se pare la máquina
   if ((digitalRead(manualModeOnOffPin)!=HIGH))
   {    
     if (machineRunningState==0 && hour>=hourStart)
     { // Ha amanecido, empezamos a mover el Heliostato
       machineRunningState=1;
       LCDClear();
-      LCDWrite("Hora de comienzoArrancando...");
+      LCDWrite((char*)"Hora de comienzoArrancando...");
       delay(1000);
     }
     else if (machineRunningState==1 && hour>=hourReset)
@@ -159,14 +120,14 @@ void loop()
       machineRunningState=2;
       machinePendingReset=1;
       LCDClear();
-      LCDWrite("Hora final.     Espera nuevo dia");
+      LCDWrite((char*)"Hora final.     Espera nuevo dia");
       delay(1000);
     }
     else if (machineRunningState==2 && hour<=hourStart)
     { // Hemos cambiado de dia, esperamos entonces a que amanezca
       machineRunningState=0;
       LCDClear();
-      LCDWrite("Nuevo dia.      Espera amanecer");
+      LCDWrite((char*)"Nuevo dia.      Espera amanecer");
       delay(1000);
     }
     else if (machineRunningState==1 && hour<hourStart)
@@ -189,7 +150,7 @@ void loop()
   if (machinePendingReset==1)
   {
     LCDClear();
-    LCDWrite("Reseteando...");
+    LCDWrite((char*)"Reseteando...");
     resetPositionOfMachine();
     machinePendingReset=0;
   }
@@ -214,7 +175,7 @@ void loop()
     if (machineRunningState==0) 
     {
       LCDClear();
-      LCDWrite("Esperando amanecer...");
+      LCDWrite((char*)"Esperando amanecer...");
     }
     else if (machineRunningState==1)
     {
@@ -243,7 +204,7 @@ void loop()
     else
     {
       LCDClear();
-      LCDWrite("Durmiendo...");
+      LCDWrite((char*)"Durmiendo...");
     }
   }  
   
