@@ -91,13 +91,13 @@ void delayInMicroseconds(long delayInMicrosec)
 void findLimits(int altOrAz, int motorDirection, float limitAngle)
 {
   if (altOrAz==1) 
-    searchForLimit(limitAngle, altitudeDirPin, altitudeStepPin, altResetSpeed, altLimitPin, altitudeMax, motorDirection );
+    searchForLimit(altOrAz, limitAngle, altitudeDirPin, altitudeStepPin, altResetSpeed, altLimitPin, altitudeMax, motorDirection );
 
   if (altOrAz==2)
-    searchForLimit(limitAngle, azimuthDirPin, azimuthStepPin, azResetSpeed, azLimitPin, azimuthMax, motorDirection );
+    searchForLimit(altOrAz, limitAngle, azimuthDirPin, azimuthStepPin, azResetSpeed, azLimitPin, azimuthMax, motorDirection );
 }
 
-void searchForLimit(float limitAngle, int DirPin, int stepPin, int ResetSpeed, int LimitPin, long maxResetSteps, int motorDirection)
+void searchForLimit(int altOrAz, float limitAngle, int DirPin, int stepPin, int ResetSpeed, int LimitPin, long maxResetSteps, int motorDirection)
 {
   long x=0;
   int microReached=0;
@@ -118,9 +118,11 @@ void searchForLimit(float limitAngle, int DirPin, int stepPin, int ResetSpeed, i
       delayInMicroseconds(MotorDelay);
       if (digitalRead(LimitPin)==HIGH) 
       {
-        LCDClear();
-        LCDWrite((char*)"Alcanzado micro"); 
-        delay(1000);
+        myLCD.clear();
+        if (altOrAz==1)
+          printToLCD("Click micro Elevation pos 0");
+        else
+          printToLCD("Click micro Azimuth pos 0");
         x=maxResetSteps;
         microReached=1;
       }
@@ -130,8 +132,11 @@ void searchForLimit(float limitAngle, int DirPin, int stepPin, int ResetSpeed, i
     
     if (microReached==0)
     {
-      LCDClear();
-      LCDWrite((char*)"ERROR. Imposiblealcanzar micro");
+      myLCD.clear();
+      if (altOrAz==1)
+        printToLCD("ERROR. Micro Elevation pos 0");
+      else
+        printToLCD("ERROR. Micro Azimuth pos 0");
       while(1);
     }
     

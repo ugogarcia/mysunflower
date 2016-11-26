@@ -1,0 +1,3 @@
+- Las librerías BigNumber y BigNumberMath no se usan
+- La librería Flash se almacena aquí como backup pero se puede bajar del repositorio de Arduino
+- RTC_Code y SunPositionAlgo_LowAc hay que instalarlas manualmente

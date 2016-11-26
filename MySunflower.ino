@@ -4,6 +4,7 @@
 // Es una version reducida de este programa en la que se han quitado muchas de las configuraciones para mayor simpleza del codigo
 // MEJORAS
 // Desactivar los motores independientemente para que solo este activo el que esta en movimiento (de lo contrario, el disipador del motor parado se calienta muchisimo)
+// Todas las funciones usan variables globales (antes el programa se usaba para manejar varios helios). Yo quitaria todos los parametros ya que son variables globales y asi simplificamos
 
 /* BUGS PENDIENTES
 - OK. PROBAR. Ver porque en la pantala cuando sale la posicion del ESPEJO sale mal (despues se posiciona bien, pero lo que pinta esta mal)
@@ -22,23 +23,40 @@
 #include "SunPositionAlgo_LowAc.h" // Esta libreria y la siguiente hay que añadirla al entorno (gestionar librerias) desde el directorio .\libraries
 #include "RTC_Code.h"
 #include <SoftwareSerial.h>
+#include <serLCD.h>
 
-byte suntrackerOrHeliostat=2;            // Set 1. 1 - Suntracking, 2 - Heliostato
+#ifdef NO_CLOCK
+int dummy_month, dummy_day;
+float dummy_hour, dummy_minute, dummy_second;
+#endif
+
 int lcdOption=0;
 int updateLCD=0;
-
-// Attach the serial display's RX line to digital pin 2
-SoftwareSerial myLCD(0,9); // pin 3 = RX (unused), pin 9 = TX
+serLCD myLCD(9);
 
 // Configuracion inicial
 void setup() 
 {
-  myLCD.begin(9600); // set up serial port for 9600 baud
-  Serial.begin(9600);
-  delay(500); // wait for display to boot up
+  #ifdef NO_CLOCK
+  // DUMMY UGO. BORRAR. SOLO PARA ALIMENTAR SWITCH DE PRUEBAS en ARDUINO MEGA
+  pinMode(39, OUTPUT);  
+  digitalWrite(39, HIGH);
+  pinMode(41, OUTPUT);  
+  digitalWrite(41, HIGH);
+  pinMode(13, OUTPUT);  
+  digitalWrite(13, LOW);
+  dummy_month=11;
+  dummy_day=21;
+  dummy_hour=11;
+  dummy_minute=0;
+  dummy_second=0;
+  #endif
   
-  LCDClear();
-  LCDWrite((char*)"MySunflower     CARGANDO...");
+  myLCD.setType(3);
+  myLCD.clear();
+  myLCD.print("MySunflower");
+  myLCD.selectLine(2);
+  myLCD.print("CARGANDO...");
   delay(1000);
   
   // Solo configuracmos los pines de salida, pues por defecto, Arduino los configura como de entrada
@@ -86,6 +104,20 @@ void setup()
 }
 int iterations=0; 
 
+
+void loop2()
+{
+  //digitalWrite(39, HIGH);
+  myLCD.clear();
+     if (digitalRead(azLimitPin)==HIGH) 
+      {
+        printToLCD("El estado del LCD es HIGH");
+      }
+      else
+      {
+      printToLCD("Estado LOW");
+      }
+}
 // Bucle principal
 void loop()
 {  
@@ -101,6 +133,15 @@ void loop()
   minute = minuteRTC;
   second = secondRTC;
 
+  #ifdef NO_CLOCK
+  yearRTC=16;
+  month = dummy_month;
+  day = dummy_day;
+  hour = dummy_hour;
+  minute = dummy_minute;
+  second = dummy_second;
+  #endif
+
   // Control de cambio de estado: 
   //    * Amanecer (empezamos a mover)
   //    * Anochecer (volvemos a reposo)
@@ -111,24 +152,30 @@ void loop()
     if (machineRunningState==0 && hour>=hourStart)
     { // Ha amanecido, empezamos a mover el Heliostato
       machineRunningState=1;
-      LCDClear();
-      LCDWrite((char*)"Hora de comienzoArrancando...");
-      delay(1000);
+      myLCD.clear();
+      myLCD.print("AMANECER");
+      myLCD.selectLine(2);
+      myLCD.print("Arrancamos");
+      delay(2000);
     }
     else if (machineRunningState==1 && hour>=hourReset)
     { // Ha anochecido, reseteamos maquina y esperamos a que sea el dia siguiente
       machineRunningState=2;
       machinePendingReset=1;
-      LCDClear();
-      LCDWrite((char*)"Hora final.     Espera nuevo dia");
-      delay(1000);
+      myLCD.clear();
+      myLCD.print("ANOCHECER");
+      myLCD.selectLine(2);
+      myLCD.print("Espera dia sig");
+      delay(2000);
     }
     else if (machineRunningState==2 && hour<=hourStart)
     { // Hemos cambiado de dia, esperamos entonces a que amanezca
       machineRunningState=0;
-      LCDClear();
-      LCDWrite((char*)"Nuevo dia.      Espera amanecer");
-      delay(1000);
+      myLCD.clear();
+      myLCD.print("NUEVO DIA");
+      myLCD.selectLine(2);
+      myLCD.print("Espera hora ini");
+      delay(2000);
     }
     else if (machineRunningState==1 && hour<hourStart)
     {
@@ -149,8 +196,8 @@ void loop()
   // Si la maquina esta pendiente de reseteo, lo realizamos
   if (machinePendingReset==1)
   {
-    LCDClear();
-    LCDWrite((char*)"Reseteando...");
+    myLCD.clear();
+    myLCD.print("Reseteando...");
     resetPositionOfMachine();
     machinePendingReset=0;
   }
@@ -174,37 +221,45 @@ void loop()
     // Actualizamos LCD
     if (machineRunningState==0) 
     {
-      LCDClear();
-      LCDWrite((char*)"Esperando amanecer...");
+      myLCD.clear();
+      printToLCD("Esperando amanecer...");
     }
     else if (machineRunningState==1)
     {
-      moveMachine(0, 0, machineTargetAlt, machineTargetAz);
+      moveMachine(0,0,false);
     
-      LCDClear();
+      myLCD.clear();
       if (lcdOption==0)
       {
         dtostrf(SunsAzimuth, 1, 1, line1LCD);
         dtostrf(SunsAltitude, 1, 1, line2LCD);
-        sprintf(lineLCD,"%s%sA %sE",(suntrackerOrHeliostat==1)?"SEGUIDOR. SOL   ":"HELIO. SOL      ", line1LCD, line2LCD);
+        myLCD.selectLine(1);
+        myLCD.print((suntrackerOrHeliostat==1)?"SEGUIDOR. Sol":"HELIO. Sol");
+        sprintf(lineLCD,"%sAz %sEl",line1LCD, line2LCD);
       }
       else if (lcdOption==1)
       {
         dtostrf(machineCurrentAz, 1, 1, line1LCD);
         dtostrf(machineCurrentAlt, 1, 1, line2LCD);
-        sprintf(lineLCD,"%s%sA %sE",(suntrackerOrHeliostat==1)?"SEGUIDOR. ESPEJO":"HELIO. ESPEJO   ", line1LCD, line2LCD);
+        myLCD.selectLine(1);
+        myLCD.print((suntrackerOrHeliostat==1)?"SEGUIDOR. Espejo":"HELIO. Espejo");
+        sprintf(lineLCD,"%sAz %sEl", line1LCD, line2LCD);
       }
       else if (lcdOption==2)
       {
-        sprintf(lineLCD,"%s%02d:%02d:%02d %02d/%02d",(suntrackerOrHeliostat==1)?"SEGUIDOR. HORA  ":"HELIO. HORA     ",(int)hour,(int)minute,(int)second,(int)day, (int)month);
+        myLCD.selectLine(1);
+        myLCD.print((suntrackerOrHeliostat==1)?"SEGUIDOR. Hora":"HELIO. Hora");
+        sprintf(lineLCD,"%02d:%02d:%02d %02d/%02d",(int)hour,(int)minute,(int)second,(int)day, (int)month);
       }
-
-      LCDWrite(lineLCD);
+      myLCD.selectLine(2);
+      myLCD.print(lineLCD);
     }
     else
     {
-      LCDClear();
-      LCDWrite((char*)"Durmiendo...");
+      myLCD.clear();
+      myLCD.print("Esperando al dia");
+      myLCD.selectLine(2);
+      myLCD.print("siguiente...");
     }
   }  
   
@@ -223,25 +278,3 @@ void loop()
     updateLCD=1;
   }
 }
-
-// Bucle principal de pruebas
-/*
-int ok=0;
-void loop1()
-{
-  if (ok==0)
-  {
-    float azsteps;
-    Serial.println("Moviendo 45 grados altitud");
-    MachineOn(1);
-  
-    azsteps = linearActuatorMoveMotor(1, 0, 45, azGearRatio, azMotorDirection, azLengthA, azLengthB, azAcuteObtuse, azAngleAtZero);
-    Serial.print("Pasos: ");
-    Serial.println(azsteps);
-    Serial.println("Moviendo...");
-    moveToPosition(azsteps, 0);
-    ok=1;
-    MachineOff(1);
-  }
-}
-*/

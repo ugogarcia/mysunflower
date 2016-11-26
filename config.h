@@ -33,8 +33,8 @@ const float timezone = 1;
 const int useNorthAsZero = 0;            // 0 - Hemisferio Norte, 1 - Hemisferio Sur. UGO -> Lo podr´amos quitar, siempre vamos a estar en el hemisferio norte
 const unsigned long updateEvery = 30;    // Frecuencia de actualizacion de la posicion en segundos
 const float moveAwayFromLimit = 5;       // Numero de grados a alejarse del microinterruptor de fin de recorrido cuando se alcanza
-const int hourReset = 17;                // Hora a la que el heliostato volvera a su posicion de inicio hasta el dia siguiente (usar hora sin tener en cuenta el horario de verano)
-const int hourStart = 10;                 // Hora a la que empezar´ el heliostato a funcionar
+const int hourReset = 19;                // Hora a la que el heliostato volvera a su posicion de inicio hasta el dia siguiente (usar hora sin tener en cuenta el horario de verano)
+const int hourStart = 10;                // Hora a la que empezar´ el heliostato a funcionar
 
 // MOTORES
 const float steps = 800;                 // Numero de pasos necesarios para que el motor de una vuelta completa
@@ -71,4 +71,5 @@ char inData[20];
 
 int machineRunningState=0;               // 0 - Esperando amanecer. 1 - Funcionando. 2 - Esperando cambio de dia
 int machinePendingReset=0;               // 1 - La maquina esta esperando un reseteo
-
+int suntrackerOrHeliostat=2;             // 1 - Seguidor solar. 2 - Heliostato
+#define NO_CLOCK                         // Permite probar el circuito sin ningún reloj conectado (el tiempo se modifica por configuracion manualmente)
